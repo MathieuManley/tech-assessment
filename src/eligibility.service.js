@@ -69,12 +69,41 @@ class EligibilityService {
    * @param criteria
    * @return {boolean}
    */
+  isEligible(cart, criteria) {
+    const criteriaKeys = Object.keys(criteria);
+    const criteriaKeysLength = criteriaKeys.length;
+
+    if (!criteriaKeysLength) {
+      return true;
+    }
+
+    let count = 0;
+    while (criteriaKeysLength > count) {
+      const key = criteriaKeys[count];
+      const criterion = criteria[key];
+      const isMet = this.isCriterionMet(cart, key, criterion);
+      if (!isMet) {
+        return false;
+      }
+      count++;
+    }
+    return true;
+  }
+
+  /**
+   * Format key to get the value or values from the cart.
+   * Shall format the cart values into an array when needed to check multiple occurrences.
+   *
+   * @param key
+   * @param cart
+   * @return { string | number | Array<string> | Array<number> }
+   */
   getCartValue(key, cart) {
     let finalValue = cart;
-    let count = 0;
     const keys = key.split(".").filter((e) => e);
     const keyArrayLength = keys.length;
 
+    let count = 0;
     while (keyArrayLength > count) {
       const key = keys[count];
       if (Array.isArray(finalValue)) {
@@ -91,40 +120,30 @@ class EligibilityService {
     return finalValue;
   }
 
-  isEligible(cart, criteria) {
-    const criteriaKeys = Object.keys(criteria);
-    const criteriaKeysLength = criteriaKeys.length;
-
-    if (!criteriaKeysLength) {
-      return true;
+  /**
+   * Check if cart value meets one criterion
+   * The passed key needs to be the one in relation with the criterion.
+   *
+   * @param cart
+   * @param key
+   * @param criterion
+   * @return { boolean }
+   */
+  isCriterionMet(cart, key, criterion) {
+    const cartValue = this.getCartValue(key, cart);
+    if (cartValue === undefined) {
+      return false;
     }
 
-    let count = 0;
-    while (criteriaKeysLength > count) {
-      const key = criteriaKeys[count];
-      const criterion = criteria[key];
-      const cartValue = this.getCartValue(key, cart);
-      if (cartValue === undefined) {
+    if (typeof criterion === "object") {
+      return Object.keys(criterion).every((k) => {
+        if (k in logicalConditions) {
+          return logicalConditions[k](cartValue, criterion[k]);
+        }
         return false;
-      }
-
-      let isCriteriaMet = false;
-      if (typeof criterion === "object") {
-        isCriteriaMet = Object.keys(criterion).every((k) => {
-          if (k in logicalConditions) {
-            return logicalConditions[k](cartValue, criterion[k]);
-          }
-          return false;
-        });
-      } else {
-        isCriteriaMet = eq(cartValue, criterion);
-      }
-      if (!isCriteriaMet) {
-        return false;
-      }
-      count++;
+      });
     }
-    return true;
+    return eq(cartValue, criterion);
   }
 }
 
