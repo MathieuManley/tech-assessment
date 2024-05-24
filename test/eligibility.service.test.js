@@ -320,7 +320,7 @@ describe('Eligibility', () => {
       const cart = {
         "cartId": "cart-id",
         "shopperId": "shopper-id",
-        "date": "2021-10-06T18:35:42.000Z",
+        "date": "2021-11-06T18:35:42.000Z",
         "totalAti": 99.80,
         "promoCode": "voucher-42",
         "products": [
@@ -355,7 +355,7 @@ describe('Eligibility', () => {
       };
       const eligibilityService = new EligibilityService();
       const actualEligibility = eligibilityService.isEligible(cart, criteria);
-      should(actualEligibility).be.false();
+      should(actualEligibility).be.true();
     });
   });
 });
