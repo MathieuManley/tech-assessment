@@ -357,5 +357,71 @@ describe('Eligibility', () => {
       const actualEligibility = eligibilityService.isEligible(cart, criteria);
       should(actualEligibility).be.true();
     });
+    it('should be eligible when deep nested cart values and key', () => {
+      const cart = {
+        "products": [
+          {
+            "some": {
+              "nested": {
+                "id": "234567876543",
+              }
+            }
+          },
+          {
+            "some": {
+              "nested": {
+                "id": "1232343848483",
+              }
+            }
+          }
+        ]
+      }
+      const criteria = {
+        "products.some.nested.id": {
+          "in": ["234567876543"]
+        },
+      };
+      const eligibilityService = new EligibilityService();
+      const actualEligibility = eligibilityService.isEligible(cart, criteria);
+      should(actualEligibility).be.true();
+    });
+    it('should be eligible when deep nested cart values with arrays and objects', () => {
+      const cart = {
+        "products": [
+          {
+            "some": {
+              "nestedArray": [
+                  {
+                  "amount": [{"t": 1}],
+                }, {
+                  "amount": [{"t": 1}],
+                }
+              ]
+            }
+          },
+          {
+            "some": {
+              "nestedArray": [
+                {
+                  "amount": [{"t": 1}],
+                },
+                {
+                  "amount": [{"t": 1}],
+                },
+              ]
+            }
+          }
+        ]
+      }
+      const criteria = {
+        "products.some.nestedArray.amount.t": {
+          "in": [1]
+        },
+      };
+      const eligibilityService = new EligibilityService();
+      const actualEligibility = eligibilityService.isEligible(cart, criteria);
+      should(actualEligibility).be.true();
+    });
+
   });
 });

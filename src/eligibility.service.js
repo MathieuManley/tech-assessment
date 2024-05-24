@@ -94,29 +94,35 @@ class EligibilityService {
    * Format key to get the value or values from the cart.
    * Shall format the cart values into an array when needed to check multiple occurrences.
    *
-   * @param key
+   * @param path - key pathway to cart value
    * @param cart
    * @return { string | number | Array<string> | Array<number> }
    */
-  getCartValue(key, cart) {
+  getCartValue(path, cart, count = 0) {
     let finalValue = cart;
-    const keys = key.split(".").filter((e) => e);
+
+    const keys = path.trim('.').split(".").filter((e) => e);
     const keyArrayLength = keys.length;
 
-    let count = 0;
     while (keyArrayLength > count) {
       const key = keys[count];
       if (Array.isArray(finalValue)) {
-        finalValue = finalValue.map((e) => e[key]);
+
+        finalValue = finalValue.map((e) => this.getCartValue(path, e, count));
         break;
       }
-      finalValue = finalValue[key];
+      else if (typeof finalValue === "object") {
+        finalValue = this.getCartValue(path.replace(key, ''), cart[key], count);
+      }
       if (finalValue === undefined) {
         break;
       }
       count++;
     }
 
+    if (Array.isArray(finalValue)) {
+      return finalValue.flat(1);
+    }
     return finalValue;
   }
 
